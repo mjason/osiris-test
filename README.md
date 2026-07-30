@@ -5,8 +5,8 @@ use — there is no runner here to learn.
 
 ```clojure
 (module app.text_test)
-(import-for-syntax osiris_test.core :refer [deftest testing is])
-(import osiris_test.core :as t)
+(import-for-syntax osiris-test.core :refer [deftest testing is])
+(import osiris-test.core :as t)
 (import app.text :refer [step])
 
 ^{:doc "step adds one."}
@@ -43,7 +43,7 @@ extension macros through the runtime dependency closure, so a dev-only entry is
 invisible to `import-for-syntax`. The package ships no runtime beyond its own
 failure formatting.
 
-A test module also needs `(import osiris_test.core :as t)` alongside the
+A test module also needs `(import osiris-test.core :as t)` alongside the
 `import-for-syntax`. The macros expand to calls on this module, and those calls
 resolve in your module, not in the macro's.
 

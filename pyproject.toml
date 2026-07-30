@@ -7,5 +7,6 @@ dependencies = []
 
 [build-system]
 build-backend = "osiris_build"
-requires = ["osiris-lang>=0.3.17,<0.4"]
+requires = ["osiris-lang>=0.3.18,<0.4"]
+
 

@@ -1,4 +1,4 @@
-(module osiris_test.core)
+(module osiris-test.core)
 
 (py/embed report "backend/report.py")
 
@@ -37,7 +37,7 @@
    "zh-CN" "描述一组断言；该描述会进入失败信息。"}
   :export true}
 (defmacro testing [description & body]
-  `(osiris_test.core/within ~description (fn [] ~@body)))
+  `(osiris-test.core/within ~description (fn [] ~@body)))
 
 ^{:doc
   {:default "Assert that an expression holds, reporting both sides on failure."
@@ -64,11 +64,11 @@
              ~right ~(first (rest (rest form)))]
          (if (~(first form) ~left ~right)
            none
-           (raise (osiris_test.core/comparison-failure
+           (raise (osiris-test.core/comparison-failure
                     ~(str form) ~left ~right ~message)))))
     `(if ~form
        none
-       (raise (osiris_test.core/predicate-failure ~(str form) ~message)))))
+       (raise (osiris-test.core/predicate-failure ~(str form) ~message)))))
 
 (defn-for-syntax osiris-test/two-argument-call? [form]
   (if (list? form)
