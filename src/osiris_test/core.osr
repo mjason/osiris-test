@@ -1,0 +1,78 @@
+(module osiris_test.core)
+
+(py/embed report "backend/report.py")
+
+(extern python report
+  ^{:doc {:default "Run a described group, adding the description to failures."
+          "zh-CN" "运行一个带描述的分组，并把描述加入失败信息。"}
+    :export true}
+  (defn ^None within [^Str description ^Any body]
+    :contract {:id "osiris-test/within-v1" :effects [:hidden-state]})
+  ^{:doc {:default "The failure to raise for a two-sided comparison."
+          "zh-CN" "两侧比较失败时应抛出的错误。"}
+    :export true}
+  (defn ^Any comparison-failure
+    [^Str form ^Any left ^Any right ^Any message]
+    :contract {:id "osiris-test/comparison-failure-v1" :effects [:hidden-state]})
+  ^{:doc {:default "The failure to raise for a single-expression assertion."
+          "zh-CN" "单表达式断言失败时应抛出的错误。"}
+    :export true}
+  (defn ^Any predicate-failure [^Str form ^Any message]
+    :contract {:id "osiris-test/predicate-failure-v1" :effects [:hidden-state]}))
+
+^{:doc
+  {:default "Define a test the Python test runner discovers and runs."
+   "zh-CN" "定义一个由 Python 测试 runner 发现并运行的测试。"}
+  :export true}
+(defmacro deftest [name & body]
+  (if (not (symbol? name))
+    (syntax-error name "deftest requires a symbol name")
+    ;; The `test-` prefix makes the Python identifier `test_...`, which is what a
+    ;; runner collects. Adding it here rather than asking the author to write it
+    ;; keeps the declaration readable without bending OEP-0001-R005A's mapping.
+    `(defn ^None ~(symbol (str "test-" name)) [] ~@body)))
+
+^{:doc
+  {:default "Describe a group of assertions; the description enters failures."
+   "zh-CN" "描述一组断言；该描述会进入失败信息。"}
+  :export true}
+(defmacro testing [description & body]
+  `(osiris_test.core/within ~description (fn [] ~@body)))
+
+^{:doc
+  {:default "Assert that an expression holds, reporting both sides on failure."
+   "zh-CN" "断言表达式成立；失败时报告表达式与两侧的实际值。"}
+  :export true}
+(defmacro is [form & message]
+  (if (> (count message) 1)
+    (syntax-error &form "is accepts at most one message expression")
+    (osiris-test/assertion form (if (empty? message) none (first message)))))
+
+;; A two-argument call is the overwhelmingly common assertion — `(= expected
+;; actual)`, `(< a b)` — and the only shape where naming both sides helps. Both
+;; are bound once before the comparison so the report shows what was actually
+;; compared rather than a re-evaluation that might disagree with it.
+;; `if` and `raise` are core forms rather than macros, so the expansion resolves
+;; in a consumer that imported nothing but this module. Expanding to `assert`
+;; would work only where the consumer had also referred that macro — a macro
+;; must not require its caller to import the macro's own dependencies.
+(defn-for-syntax osiris-test/assertion [form message]
+  (if (osiris-test/two-argument-call? form)
+    (let [left (gensym "left")
+          right (gensym "right")]
+      `(let [~left ~(first (rest form))
+             ~right ~(first (rest (rest form)))]
+         (if (~(first form) ~left ~right)
+           none
+           (raise (osiris_test.core/comparison-failure
+                    ~(str form) ~left ~right ~message)))))
+    `(if ~form
+       none
+       (raise (osiris_test.core/predicate-failure ~(str form) ~message)))))
+
+(defn-for-syntax osiris-test/two-argument-call? [form]
+  (if (list? form)
+    (if (symbol? (first form))
+      (= (count form) 3)
+      false)
+    false))

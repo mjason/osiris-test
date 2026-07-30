@@ -1,0 +1,15 @@
+[project]
+name = "osiris-test"
+version = "0.1.0"
+description = "Write Osiris tests in Osiris; run them with the Python test runner you already use."
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+build-backend = "osiris_build"
+requires = ["osiris-lang>=0.3,<0.4"]
+
+# py/embed 与「宏经扩展包导出」都还只在 main，未随 osiris-lang 发布。
+# 新版发布后删掉本表，并把上面的下限提到该版本。
+[tool.uv.sources]
+osiris-lang = { path = "../osiris" }
