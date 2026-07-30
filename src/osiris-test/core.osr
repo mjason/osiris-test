@@ -18,7 +18,12 @@
           "zh-CN" "单表达式断言失败时应抛出的错误。"}
     :export true}
   (defn ^Any predicate-failure [^Str form ^Any message]
-    :contract {:id "osiris-test/predicate-failure-v1" :effects [:hidden-state]}))
+    :contract {:id "osiris-test/predicate-failure-v1" :effects [:hidden-state]})
+  ^{:doc {:default "Dynamic equality for values the type checker cannot compare; strict mode rejects `=` on `Any` operands, and most library calls return `Any`."
+          "zh-CN" "供类型检查器无法比较的值使用的动态相等；严格模式下 `=` 不接受 `Any` 操作数，而多数库调用返回 `Any`。"}
+    :export true}
+  (defn ^Bool eq? [^Any left ^Any right]
+    :contract {:id "osiris-test/eq-v1" :effects []}))
 
 ^{:doc
   {:default "Define a test the Python test runner discovers and runs."

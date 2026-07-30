@@ -53,3 +53,14 @@ def comparison_failure(
 
 def predicate_failure(form: object, message: object = None) -> AssertionError:
     return AssertionError("%s%s" % (_prefix(message), form))
+
+
+def eq_p(left: object, right: object) -> bool:
+    """Dynamic equality for values the type checker cannot compare.
+
+    Strict Osiris rejects the `=` operator on `Any` operands, and most library
+    calls return `Any`; a test asserts on those values through this instead.
+    `bool()` collapses rich comparison results — a numpy scalar, most notably —
+    to the plain truth value the assertion needs.
+    """
+    return bool(left == right)
